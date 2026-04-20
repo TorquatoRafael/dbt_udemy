@@ -1,23 +1,23 @@
 {{ config(
     materialized='incremental',
-    incremental_strategy= 'append',
-    on_schema_change = 'sync_all_columns'
+    incremental_strategy='merge',
+    unique_key='hash',
+    tags = ['daily']
 )}}
 
 select 
     hash
-    , block_number
+    ,block_number
     , date
     , from_address
     , to_address
     , value
     , receipt_contract_address
-    , input
-    , 1 as new_campo
+    , input 
 from {{ source('eth','transactions')}}
 
 {% if is_incremental() %}
 
-where date >= (select max(date) from {{ this }} )
+where date >= (select max(date) from {{this}} )
 
 {% endif %}
